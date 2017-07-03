@@ -150,8 +150,12 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         // show loading
         mLoadingIndicator.setVisibility(View.VISIBLE);
 
+<<<<<<< HEAD
         // check network status
         if(!isNetworkAvailable()){
+=======
+        if(!isInternetAvailable()){
+>>>>>>> master
             // disable loading
             mLoadingIndicator.setVisibility(View.INVISIBLE);
             // show no connection message
@@ -309,8 +313,14 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         super.onSaveInstanceState(savedInstanceState);
     }
 
+<<<<<<< HEAD
     private boolean isNetworkAvailable(){
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+=======
+    // method for check internet connection to api
+    private boolean isInternetAvailable(){
+        ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+>>>>>>> master
         return cm.getActiveNetworkInfo() != null;
     }
 }
