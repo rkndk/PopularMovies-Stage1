@@ -1,12 +1,15 @@
 package me.rkndika.popularmovies;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.os.Parcelable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,6 +35,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     private static final String STATE_SORT_TYPE = "sortTypeState";
     private static final String STATE_RECYCLERVIEW_LIST = "recyclerViewListState";
     private static final String STATE_RECYCLERVIEW_DATA = "recyclerViewDataState";
+
+    // final value of sort type
+    private static final int POPULAR_SORT_TYPE = 1;
+    private static final int TOP_RATED_SORT_TYPE = 2;
 
     /**
      * sorting type
@@ -61,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         // if activity haven't saveInstanceState
         else {
             // initialize default sortType is sort by popular
-            sortType = 1;
+            sortType = POPULAR_SORT_TYPE;
             // load data from The Movie DB API
             loadMoviesData();
         }
@@ -71,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_movies);
         mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
 
-        GridLayoutManager layoutManager = new GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false);
+        GridLayoutManager layoutManager = new GridLayoutManager(this, numberOfColumns(), GridLayoutManager.VERTICAL, false);
 
         mMovieAdapter = new MovieAdapter(this);
 
@@ -94,15 +101,27 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         });
     }
 
+    // get number of grid's coloum dynamically
+    private int numberOfColumns() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        // You can change this divider to adjust the size of the poster
+        int widthDivider = 400;
+        int width = displayMetrics.widthPixels;
+        int nColumns = width / widthDivider;
+        if (nColumns < 2) return 2;
+        return nColumns;
+    }
+
     private void showPreviousView(Bundle savedInstanceState){
         // get sortType from previous state
         sortType = savedInstanceState.getInt(STATE_SORT_TYPE);
 
         // set title by sortType
-        if(sortType == 1){
+        if(sortType == POPULAR_SORT_TYPE){
             setTitle(getString(R.string.popular_title));
         }
-        else if(sortType == 2){
+        else if(sortType == TOP_RATED_SORT_TYPE){
             setTitle(getString(R.string.top_rated_title));
         }
 
@@ -131,6 +150,14 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         // show loading
         mLoadingIndicator.setVisibility(View.VISIBLE);
 
+        if(!isInternetAvailable()){
+            // disable loading
+            mLoadingIndicator.setVisibility(View.INVISIBLE);
+            // show no connection message
+            showErrorNoIntenetMessage();
+            return;
+        }
+
         try {
 
             Client client = new Client();
@@ -142,11 +169,11 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
             Call<Movies> call;
 
             // get data from popular link
-            if(sortType == 1){
+            if(sortType == POPULAR_SORT_TYPE){
                 call = apiService.getPopularMovie(apiKey);
             }
             // get data from top rated link
-            else if(sortType == 2){
+            else if(sortType == TOP_RATED_SORT_TYPE){
                 call = apiService.getTopRatedMovie(apiKey);
             }
             // if sortType unknown
@@ -208,6 +235,15 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         mRecyclerView.setVisibility(View.INVISIBLE);
         /* Then, show the error */
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
+        mErrorMessageDisplay.setText(getString(R.string.error_message));
+    }
+
+    private void showErrorNoIntenetMessage() {
+        /* First, hide the currently visible data */
+        mRecyclerView.setVisibility(View.INVISIBLE);
+        /* Then, show the error */
+        mErrorMessageDisplay.setVisibility(View.VISIBLE);
+        mErrorMessageDisplay.setText(getString(R.string.error_no_internet_message));
     }
 
     private void refreshMoviesData(){
@@ -241,14 +277,14 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
         // if sort by popular clicked, set sortType 1 and reload data
         if (id == R.id.action_sort_by_popular) {
-            sortType = 1;
+            sortType = POPULAR_SORT_TYPE;
             setTitle(getString(R.string.popular_title));
             refreshMoviesData();
             return true;
         }
         // if sort by top rated clicked, set sortType 2 and reload data
         else if(id == R.id.action_sort_by_top_rated){
-            sortType = 2;
+            sortType = TOP_RATED_SORT_TYPE;
             setTitle(getString(R.string.top_rated_title));
             refreshMoviesData();
             return true;
@@ -270,5 +306,11 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         savedInstanceState.putParcelableArrayList(STATE_RECYCLERVIEW_DATA, mMovieAdapter.getMoviesData());
 
         super.onSaveInstanceState(savedInstanceState);
+    }
+
+    // method for check internet connection to api
+    private boolean isInternetAvailable(){
+        ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        return cm.getActiveNetworkInfo() != null;
     }
 }
