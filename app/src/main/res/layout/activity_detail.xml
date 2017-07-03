@@ -42,7 +42,7 @@
 
                     <ImageView
                         android:id="@+id/iv_poster"
-                        android:layout_width="150dp"
+                        android:layout_width="@dimen/detail_image_width"
                         android:layout_height="wrap_content"
                         android:adjustViewBounds="true"
                         android:src="@drawable/rec_grey"/>

@@ -3,6 +3,9 @@
     <string name="error_message">
         An error has occurred. Please try again!
     </string>
+    <string name="error_no_internet_message">
+        Internet connection not available. Please check your internet connection!
+    </string>
     <string name="detail_title">Movie Detail</string>
     <string name="popular_title">Popular Movies</string>
     <string name="top_rated_title">Top Rated Movies</string>
