@@ -6,4 +6,5 @@
 
     <color name="colorBlueGrey">#ECEFF1</color>
     <color name="colorTitle">#263238</color>
+    <color name="colorRed">#F44336</color>
 </resources>
